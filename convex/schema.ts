@@ -42,4 +42,24 @@ export default defineSchema({
     focusMinutes: v.number(),
     chaptersProcessed: v.number(),
   }),
+
+  users: defineTable({
+    username: v.string(),
+    passwordHash: v.string(),
+    name: v.string(),
+    email: v.string(),
+    grade: v.string(), // "8", "9", or "10"
+    role: v.union(v.literal("admin"), v.literal("student")),
+    isBanned: v.optional(v.boolean()),
+    passwordChangeRequired: v.optional(v.boolean()),
+    permissions: v.optional(v.array(v.string())),
+  }).index("by_username", ["username"]),
+
+  accessRequests: defineTable({
+    name: v.string(),
+    email: v.string(),
+    grade: v.string(),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+    timestamp: v.number(),
+  }).index("by_status", ["status"]),
 });

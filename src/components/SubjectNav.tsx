@@ -15,7 +15,7 @@ export function SubjectNav({ selectedId, onSelect }: SubjectNavProps) {
 
   return (
     <div className="flex flex-wrap gap-3 mb-8">
-      {subjects.map((sub) => (
+      {subjects.map((sub: any) => (
         <button
           key={sub._id}
           onClick={() => onSelect(sub._id)}

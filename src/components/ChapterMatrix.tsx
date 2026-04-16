@@ -46,7 +46,7 @@ export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
             </tr>
           </thead>
           <tbody>
-            {chapters.map((ch) => (
+            {chapters.map((ch: any) => (
               <tr key={ch._id} className="border-t-3 border-foreground hover:bg-glass transition-colors">
                 <td className="p-3 border-r-3 border-foreground font-bold">{ch.chapterNumber}</td>
                 <td className="p-3 border-r-3 border-foreground">

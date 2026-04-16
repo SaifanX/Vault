@@ -1,127 +1,220 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import { Login } from "./components/Login";
+import { LandingPage } from "./components/LandingPage";
+import { SideDrawer, BottomNav } from "./components/Navigation";
+import { ChapterMatrix } from "./components/ChapterMatrix";
+import { ContentHub } from "./components/ContentHub";
+import { SubjectNav } from "./components/SubjectNav";
+import { AdminControls } from "./components/AdminControls";
+import { PasswordChangeModal } from "./components/PasswordChangeModal";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import { SubjectNav } from "./components/SubjectNav";
-import { ChapterMatrix } from "./components/ChapterMatrix";
-import { SRQFeed } from "./components/SRQFeed";
-import { Arena } from "./components/Arena";
-import { ContentHub } from "./components/ContentHub";
+import { Loader2, ShieldAlert } from "lucide-react";
 import { cn } from "./lib/utils";
 
-type View = "MATRIX" | "SRQ" | "NOTES" | "ARENA";
+const BannedOverlay: React.FC = () => (
+  <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-500">
+    <div className="bg-background border-2 border-red-500 max-w-md w-full p-8 rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center space-y-6">
+      <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+        <ShieldAlert size={40} />
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-black tracking-tight text-white uppercase italic">System Access Revoked</h2>
+        <p className="text-foreground/60 text-sm font-medium leading-relaxed">
+          Your credentials have been flagged for administrative review. The ecosystem is currently frozen.
+        </p>
+      </div>
+      <div className="pt-4 space-y-3">
+        <a 
+          href="https://wa.me/919663210965" 
+          target="_blank" 
+          rel="noreferrer"
+          className="block w-full bg-red-500 text-white font-black uppercase tracking-widest py-4 rounded-xl hover:bg-red-600 transition-all shadow-lg active:scale-95"
+        >
+          Contact Admin (WhatsApp)
+        </a>
+        <a 
+          href="mailto:saifanmohammad39@gmail.com"
+          className="block w-full bg-foreground/5 text-foreground/60 font-black uppercase tracking-widest py-3 rounded-xl hover:bg-foreground/10 transition-all text-[10px]"
+        >
+          Appeal via Email
+        </a>
+      </div>
+    </div>
+  </div>
+);
 
-function App() {
-  const [currentView, setCurrentView] = useState<View>("MATRIX");
+const CockpitHUD: React.FC = () => {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="bento-card relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full -mr-16 -mt-16 group-hover:bg-accent/10 transition-colors" />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Current_Rank</p>
+        <div className="text-3xl font-black italic">#4<span className="text-xs opacity-30 not-italic ml-1">/120</span></div>
+      </div>
+      <div className="bento-card">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Exam_Nexus</p>
+        <div className="text-3xl font-black italic">12<span className="text-xs opacity-30 not-italic ml-1">Days</span></div>
+      </div>
+      <div className="bento-card">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Baseline_Sync</p>
+        <div className="text-3xl font-black italic">92<span className="text-xs opacity-30 not-italic ml-1">%</span></div>
+      </div>
+      <div className="bento-card bg-accent text-background border-none">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">System_Status</p>
+        <div className="text-3xl font-black italic">ELITE</div>
+      </div>
+    </div>
+  );
+};
+
+const StudentDashboard: React.FC = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<Id<"subjects"> | null>(null);
   const subjects = useQuery(api.chapters.getSubjects);
-  const seed = useMutation(api.seed.seedNCERTData);
 
-  // Auto-select first subject once loaded
   useEffect(() => {
     if (subjects && subjects.length > 0 && !selectedSubjectId) {
       setSelectedSubjectId(subjects[0]._id);
     }
   }, [subjects, selectedSubjectId]);
 
-  const requestNotificationPermission = () => {
-    if ("Notification" in window) {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          alert("AGRESSIVE NOTIFICATIONS ENABLED. VAULT WILL SYNC WITH OVERDUE TASKS.");
-        }
-      });
-    }
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground font-mono">
-      <header className="brutalist-border border-t-0 border-x-0 p-6 flex justify-between items-center bg-background z-10">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter italic">VAULT. v0.1</h1>
-          <p className="text-[10px] opacity-50 uppercase tracking-[0.3em] font-black mt-1">Mechanical Academic OS</p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <CockpitHUD />
+      
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black tracking-tight">Academic Matrix</h2>
+          <p className="text-foreground/40 text-[10px] font-black uppercase tracking-[0.3em]">
+            Syncing Grade Level Data • {new Date().toLocaleDateString()}
+          </p>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={requestNotificationPermission}
-            className="hidden md:block brutalist-button text-[10px] py-1 px-3 bg-glass text-foreground shadow-none"
-          >
-            ENABLE PUSH
-          </button>
-          <div className="brutalist-card py-1 px-4 bg-accent text-background font-bold text-sm">95% BASELINE</div>
-          {subjects?.length === 0 && (
-            <button 
-              onClick={() => seed()} 
-              className="brutalist-button text-xs py-1 animate-pulse"
-            >
-              INITIALIZE SYLLABUS
-            </button>
-          )}
-        </div>
+        <SubjectNav selectedId={selectedSubjectId} onSelect={setSelectedSubjectId} />
       </header>
 
-      <main className="flex-1 p-6 pb-24 overflow-y-auto max-w-7xl mx-auto w-full">
-        {currentView === "MATRIX" && (
-          <>
-            <SubjectNav 
-              selectedId={selectedSubjectId} 
-              onSelect={setSelectedSubjectId} 
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <section className="bento-card">
+            <h3 className="text-xs font-black uppercase tracking-widest mb-6 opacity-60">Priority Segments</h3>
             {selectedSubjectId ? (
               <ChapterMatrix subjectId={selectedSubjectId} />
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 grayscale opacity-30">
-                <div className="text-6xl font-black">NULL</div>
-                <p className="mt-2 text-xs uppercase tracking-widest">Awaiting Command...</p>
+              <div className="p-12 text-center opacity-20 font-black uppercase tracking-widest flex flex-col items-center gap-4">
+                <Loader2 className="animate-spin" />
+                Initializing Neural Interface...
               </div>
             )}
-          </>
-        )}
-
-        {currentView === "SRQ" && <SRQFeed />}
-        {currentView === "ARENA" && <Arena />}
-        {currentView === "NOTES" && <ContentHub />}
-      </main>
-
-      <nav className="fixed bottom-0 left-0 right-0 brutalist-border border-b-0 border-x-0 bg-background/90 backdrop-blur-xl p-4 flex justify-around z-20">
-        <NavItem 
-          label="MATRIX" 
-          active={currentView === "MATRIX"} 
-          onClick={() => setCurrentView("MATRIX")} 
-        />
-        <NavItem 
-          label="SRQ" 
-          active={currentView === "SRQ"} 
-          onClick={() => setCurrentView("SRQ")} 
-        />
-        <NavItem 
-          label="NOTES" 
-          active={currentView === "NOTES"} 
-          onClick={() => setCurrentView("NOTES")} 
-        />
-        <NavItem 
-          label="ARENA" 
-          active={currentView === "ARENA"} 
-          onClick={() => setCurrentView("ARENA")} 
-        />
-      </nav>
+          </section>
+        </div>
+        
+        <div className="space-y-6">
+          <section className="bento-card min-h-[400px]">
+            <h3 className="text-xs font-black uppercase tracking-widest mb-6 opacity-60">Focus Engine</h3>
+            <ContentHub />
+          </section>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
-function NavItem({ label, active = false, onClick }: { label: string; active?: boolean; onClick: () => void }) {
+const AdminDashboard: React.FC = () => {
+  const seed = useMutation(api.users.seedUsers);
+  const syllabusSeed = useMutation(api.seed.seedNCERTData);
+
   return (
-    <button 
-      onClick={onClick}
-      className={cn(
-        "font-black text-xs tracking-widest px-4 py-2 transition-all hover:bg-glass",
-        active && "text-accent border-b-2 border-accent"
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <header className="flex flex-col gap-2 border-b border-foreground/10 pb-6">
+        <h2 className="text-3xl font-black tracking-tight italic">COMMAND_CENTER</h2>
+        <p className="text-red-500 text-[10px] font-black uppercase tracking-widest">Administrator: Level 0 Access Granted</p>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bento-card bg-foreground text-background">
+            <h3 className="text-xs font-black uppercase tracking-widest mb-4 opacity-70">Initialize Matrix</h3>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => syllabusSeed()}
+                className="w-full bg-background text-foreground font-black uppercase tracking-widest py-3 rounded-lg hover:opacity-90 transition-all border border-foreground/10"
+              >
+                Seed Syllabus
+              </button>
+              <button 
+                onClick={() => seed()}
+                className="w-full bg-background text-foreground font-black uppercase tracking-widest py-3 rounded-lg hover:opacity-90 transition-all border border-foreground/10 text-[10px]"
+              >
+                Seed Default Users
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="lg:col-span-2">
+          <AdminControls />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MainLayout: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  useEffect(() => {
+    if (user?.passwordChangeRequired) {
+      setShowPasswordModal(true);
+    }
+  }, [user]);
+
+  if (!isAuthenticated) return <Navigate to="/login" />;
+
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground transition-colors duration-300">
+      {user?.isBanned && <BannedOverlay />}
+      {showPasswordModal && user && (
+        <PasswordChangeModal userId={user._id} onClose={() => setShowPasswordModal(false)} />
       )}
-    >
-      {label}
-    </button>
+      
+      <SideDrawer />
+      <main className={cn(
+        "flex-1 p-6 md:p-12 pb-32 md:pb-12 bg-background transition-all",
+        user?.isBanned && "filter grayscale opacity-50 pointer-events-none"
+      )}>
+        <div className="max-w-6xl mx-auto">
+          {user?.role === "admin" ? <AdminDashboard /> : <StudentDashboard />}
+        </div>
+      </main>
+      <BottomNav />
+    </div>
+  );
+};
+
+function App() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="text-[10px] font-black uppercase tracking-[0.5em] animate-pulse">Syncing Matrix...</div>
+      </div>
+    );
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/dashboard/*" element={<MainLayout />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
 }
-
 
 export default App;

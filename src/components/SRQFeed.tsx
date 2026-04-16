@@ -21,7 +21,7 @@ export function SRQFeed() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {overdueChapters.map((ch) => (
+          {overdueChapters.map((ch: any) => (
             <div key={ch._id} className="brutalist-card hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-black uppercase tracking-tighter text-accent">CH#{ch.chapterNumber}</span>

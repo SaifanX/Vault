@@ -14,7 +14,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
 
     if (isActive && timeLeft > 0) {
       interval = setInterval(() => {

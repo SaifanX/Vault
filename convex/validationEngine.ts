@@ -1,9 +1,9 @@
 import { v } from "convex/values";
-import { action, internalMutation, internalQuery } from "./_generated/server";
+import { action, internalMutation, internalQuery, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export const processPendingSummaries = action({
+export const processPendingSummaries = internalAction({
   args: {},
   handler: async (ctx) => {
     // 1. Get all pending summaries
@@ -11,6 +11,7 @@ export const processPendingSummaries = action({
     
     if (pendingSummaries.length === 0) return;
 
+    // @ts-ignore
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 

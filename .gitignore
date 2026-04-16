@@ -27,4 +27,4 @@ convex/_generated
 .env.*.local
 
 # Vault specific
-Docs/notes/*.pdf
+Docs/
