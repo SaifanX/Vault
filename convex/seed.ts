@@ -59,7 +59,12 @@ export const seedNCERTData = mutation({
         ];
       }
 
-      for (let i = 0; i < chapters.length; i++) {
+        // 2024-25 NCERT Link Pattern
+        let resourceUrl = "";
+        const chNum = (i + 1).toString().padStart(2, "0");
+        if (sub.name === "Mathematics") resourceUrl = `https://ncert.nic.in/textbook/pdf/iemh1${chNum}.pdf`;
+        if (sub.name === "Science") resourceUrl = `https://ncert.nic.in/textbook/pdf/iesc1${chNum}.pdf`;
+
         await ctx.db.insert("chapters", {
           subjectId,
           chapterNumber: i + 1,
@@ -69,10 +74,10 @@ export const seedNCERTData = mutation({
           ncertExercisesCompleted: false,
           pyqCompleted: false,
           frictionScore: 0,
-          nextReviewDate: Date.now(), // Initial baseline
+          nextReviewDate: Date.now(),
           verificationStatus: "unattempted",
+          resourceUrl: resourceUrl || undefined,
         });
-      }
     }
     return "Vault Seeding Complete: Grade 9 Academic Matrix Initialized.";
   },

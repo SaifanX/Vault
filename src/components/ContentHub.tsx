@@ -1,71 +1,117 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { cn } from "../lib/utils";
+import { 
+  BookOpen, 
+  ExternalLink, 
+  Loader2, 
+  FileText,
+  X
+} from "lucide-react";
 
 export function ContentHub() {
-  const [view, setView] = useState<"textbooks" | "notes">("textbooks");
+  const [activeUrl, setActiveUrl] = useState<string | null>(null);
+  const subjects = useQuery(api.chapters.getSubjects);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<any>(null);
+  
+  const chapters = useQuery(
+    api.chapters.getChapters, 
+    selectedSubjectId ? { subjectId: selectedSubjectId } : "skip"
+  );
+
+  useEffect(() => {
+    if (subjects && subjects.length > 0 && !selectedSubjectId) {
+      setSelectedSubjectId(subjects[0]._id);
+    }
+  }, [subjects, selectedSubjectId]);
+
+  if (!chapters) return <div className="p-4">Loading Study Data...</div>;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-6 mb-8 border-b-3 border-foreground/10 pb-4">
-        <button 
-          onClick={() => setView("textbooks")}
-          className={cn(
-            "text-2xl font-black italic transition-all",
-            view === "textbooks" ? "text-accent translate-y-[-2px]" : "opacity-30 hover:opacity-100"
-          )}
-        >
-          NCERT TEXTBOOKS
-        </button>
-        <button 
-          onClick={() => setView("notes")}
-          className={cn(
-            "text-2xl font-black italic transition-all",
-            view === "notes" ? "text-accent translate-y-[-2px]" : "opacity-30 hover:opacity-100"
-          )}
-        >
-          TOPPER'S NOTES
-        </button>
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* Subject Switcher */}
+      <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-none">
+        {subjects?.map((sub) => (
+          <button
+            key={sub._id}
+            onClick={() => setSelectedSubjectId(sub._id)}
+            className={cn(
+              "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shrink-0",
+              selectedSubjectId === sub._id 
+                ? "bg-foreground text-background" 
+                : "bg-foreground/5 text-foreground/40 hover:bg-foreground/10"
+            )}
+          >
+            {sub.name}
+          </button>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {view === "textbooks" ? (
-          <>
-            <ContentCard title="Mathematics (Class 9)" status="NCERT Official" />
-            <ContentCard title="Science (Class 9)" status="NCERT Official" />
-            <ContentCard title="India & Contemporary World I" status="History" />
-            <ContentCard title="Contemporary India I" status="Geography" />
-            <ContentCard title="Democratic Politics I" status="Civics" />
-            <ContentCard title="Economics (Class 9)" status="Economics" />
-          </>
-        ) : (
-          <>
-            <ContentCard title="Physics: Master Derivations" status="Handwritten" />
-            <ContentCard title="The French Revolution: Mindmap" status="Handwritten" />
-            <ContentCard title="Polynomials: Logic Gaps" status="Handwritten" />
-            <ContentCard title="Tissues: Essential Diagrams" status="Handwritten" />
-          </>
-        )}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Resource List */}
+        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-foreground/10">
+          {!chapters && (
+            <div className="flex items-center justify-center p-12 opacity-20">
+              <Loader2 className="animate-spin" />
+            </div>
+          )}
+          {chapters?.map((ch) => (
+            <button
+              key={ch._id}
+              onClick={() => ch.resourceUrl && setActiveUrl(ch.resourceUrl)}
+              disabled={!ch.resourceUrl}
+              className={cn(
+                "w-full bento-card p-4 flex items-center justify-between group transition-all text-left",
+                activeUrl === ch.resourceUrl ? "border-accent bg-accent/5" : "hover:border-foreground/20",
+                !ch.resourceUrl && "opacity-30 cursor-not-allowed grayscale"
+              )}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-foreground/5 rounded-lg flex items-center justify-center text-foreground/40 group-hover:text-accent group-hover:bg-accent/10 transition-colors">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold tracking-tight">Ch.{ch.chapterNumber} • {ch.title}</h4>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 italic">Official_PDF_Link</p>
+                </div>
+              </div>
+              {ch.resourceUrl && <ExternalLink size={14} className="opacity-0 group-hover:opacity-40 transition-opacity" />}
+            </button>
+          ))}
+        </div>
 
-      <div className="brutalist-card bg-glass min-h-[500px] flex items-center justify-center border-dashed">
-        <div className="text-center space-y-4">
-          <div className="text-4xl font-black opacity-30 italic">VIEWER INITIALIZING...</div>
-          <p className="text-[10px] uppercase tracking-[0.4em] font-black opacity-50">Rendering High-Fidelity PDF Host</p>
+        {/* Viewer Frame */}
+        <div className="bento-card relative min-h-[500px] flex flex-col p-0 overflow-hidden bg-black/20 border-foreground/5">
+          {activeUrl ? (
+            <div className="flex flex-col h-full">
+              <div className="h-10 px-4 bg-background border-b border-foreground/5 flex items-center justify-between">
+                <div className="text-[8px] font-black uppercase tracking-widest opacity-40">Document_Viewer_Active</div>
+                <button onClick={() => setActiveUrl(null)} className="opacity-40 hover:opacity-100 transition-opacity">
+                  <X size={14} />
+                </button>
+              </div>
+              <iframe 
+                src={activeUrl}
+                className="flex-1 w-full h-full invert dark:filter-none"
+                title="Syllabus Viewer"
+              />
+            </div>
+          ) : (
+            <div className="m-auto text-center space-y-6 p-12">
+               <div className="w-20 h-20 bg-foreground/5 rounded-full flex items-center justify-center mx-auto opacity-20">
+                  <BookOpen size={40} />
+               </div>
+               <div className="space-y-2">
+                  <h3 className="text-2xl font-black italic tracking-tighter uppercase opacity-30">Awaiting_Selection</h3>
+                  <p className="max-w-[200px] mx-auto text-[10px] font-black uppercase tracking-widest opacity-20 leading-relaxed">
+                    Select a chapter from the list to start reading.
+                  </p>
+               </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-function ContentCard({ title, status }: { title: string; status: string }) {
-  return (
-    <div className="brutalist-card bg-background hover:bg-glass transition-all cursor-pointer group">
-      <div className="text-[10px] font-black text-accent mb-2 uppercase tracking-tighter">{status}</div>
-      <h3 className="text-lg font-black group-hover:italic transition-all">{title}</h3>
-      <div className="mt-4 flex justify-end">
-        <span className="text-[10px] font-black border-2 border-foreground px-2 py-0.5">OPEN →</span>
-      </div>
-    </div>
-  );
-}
-

@@ -46,7 +46,7 @@ export const PasswordChangeModal: React.FC<{ userId: Id<"users">, onClose: () =>
           </div>
           <div className="space-y-1">
             <h3 className="text-xl font-black italic uppercase tracking-tighter">Security Update</h3>
-            <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">System detected temporary password</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Please update your password</p>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export const PasswordChangeModal: React.FC<{ userId: Id<"users">, onClose: () =>
                disabled={loading}
                className="w-full bg-foreground text-background font-black uppercase tracking-widest py-4 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-xl disabled:opacity-50"
              >
-               {loading ? "Syncing..." : "Update Security"}
+               {loading ? "Updating..." : "Update Password"}
              </button>
              <button 
                type="button"

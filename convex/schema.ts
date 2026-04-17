@@ -22,6 +22,7 @@ export default defineSchema({
       v.literal("pending"),
       v.literal("verified")
     ),
+    resourceUrl: v.optional(v.string()),
   })
   .index("by_subject", ["subjectId"])
   .index("by_review_date", ["nextReviewDate"]),

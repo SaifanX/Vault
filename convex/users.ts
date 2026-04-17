@@ -107,6 +107,24 @@ export const updatePassword = mutation({
   },
 });
 
+export const listUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("users").collect();
+  },
+});
+
+export const toggleBan = mutation({
+  args: {
+    userId: v.id("users"),
+    isBanned: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, { isBanned: args.isBanned });
+    return "User status updated";
+  },
+});
+
 export const me = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {

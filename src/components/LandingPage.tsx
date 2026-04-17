@@ -34,7 +34,7 @@ export const LandingPage: React.FC = () => {
              onClick={() => setShowInviteModal(true)}
              className="bg-foreground text-background text-xs font-black uppercase tracking-widest px-6 py-3 rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
           >
-            Get Early Access
+            Get Started
           </button>
         </div>
       </nav>
@@ -43,13 +43,13 @@ export const LandingPage: React.FC = () => {
       <section className="pt-40 pb-24 px-6 md:px-12 text-center max-w-5xl mx-auto space-y-10">
         <div className="space-y-4">
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
-            The Definitive <br />
-            <span className="text-foreground/40 italic">Operating System</span> <br />
-            for Academic Success.
+            The Best <br />
+            <span className="text-foreground/40 italic">Study Hub</span> <br />
+            for Your Success.
           </h1>
           <p className="max-w-xl mx-auto text-foreground/60 text-lg font-medium">
-            Designed exclusively for Orchids International Students Grade 8–10. 
-            Minimal clutter, maximum focus.
+            Built for students in Grades 8–10. 
+            No distractions, just everything you need to study well.
           </p>
         </div>
 
@@ -58,10 +58,10 @@ export const LandingPage: React.FC = () => {
             to={isAuthenticated ? "/dashboard" : "/login"} 
             className="w-full md:w-auto bg-foreground text-background px-10 py-5 rounded-full font-black uppercase tracking-[0.2em] text-sm flex items-center justify-center gap-3 shadow-2xl hover:bg-foreground/90 transition-all"
           >
-            {isAuthenticated ? "Enter the Vault" : "Get Access Now"}
+            {isAuthenticated ? "Go to My Dashboard" : "Join Now"}
             <ArrowRight size={20} />
           </Link>
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Join 1,200+ Students already optimized</p>
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Helping 1,200+ students improve their grades</p>
         </div>
 
         {/* Hero Visual Block */}
@@ -75,7 +75,7 @@ export const LandingPage: React.FC = () => {
                       <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 opacity-20" />
                       <div className="w-2.5 h-2.5 rounded-full bg-green-400 opacity-20" />
                    </div>
-                   <div className="mx-auto text-[10px] font-black uppercase tracking-widest opacity-20">Secure_Sync_v4.2</div>
+                   <div className="mx-auto text-[10px] font-black uppercase tracking-widest opacity-20">Securely Connected</div>
                 </div>
                 <div className="flex-1 p-8 grid grid-cols-3 gap-6 opacity-30">
                    <div className="col-span-2 space-y-4 pt-12">
@@ -97,25 +97,25 @@ export const LandingPage: React.FC = () => {
       {/* Features Grid */}
       <section className="px-6 md:px-12 py-32 max-w-7xl mx-auto">
         <div className="mb-20 space-y-4">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase">System Features</h2>
-          <p className="text-foreground/40 uppercase tracking-widest font-black text-xs">Built for pure academic leverage</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight uppercase">Tools You'll Love</h2>
+          <p className="text-foreground/40 uppercase tracking-widest font-black text-xs">Simpler studying for everyone</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <FeatureCard 
             icon={Zap} 
-            title="Simulated Exams" 
-            desc="Test your knowledge before it counts with realistic mock tests designed by experts." 
+            title="Practice Exams" 
+            desc="Test yourself before the real thing with practice papers made for your grade." 
           />
           <FeatureCard 
             icon={BookOpen} 
-            title="Syllabus Matrix" 
-            desc="Every textbook and lecture note organized in one searchable, high-speed neural hub." 
+            title="Study Library" 
+            desc="Every textbook and your notes organized in one clear, easy-to-use library." 
           />
           <FeatureCard 
             icon={BarChart3} 
-            title="Academic Radar" 
-            desc="Track your performance trends and baseline sync in real-time. Know exactly where you stand." 
+            title="Grade Tracker" 
+            desc="See how you're doing and track your improvement over time. Stay on top of your goals." 
           />
         </div>
       </section>
@@ -123,23 +123,23 @@ export const LandingPage: React.FC = () => {
       {/* CTA Footer */}
       <section className="px-6 py-40 text-center">
         <div className="bento-card border-accent/20 bg-accent/5 p-16 rounded-[3rem] max-w-4xl mx-auto space-y-10">
-          <h2 className="text-5xl font-black tracking-tighter italic">Ready for the upgrade?</h2>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter italic">Want to join the community?</h2>
           <button 
              onClick={() => setShowInviteModal(true)}
              className="bg-foreground text-background px-12 py-6 rounded-full font-black uppercase tracking-widest text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all"
           >
-            Request Invite Access
+            Apply for Membership
           </button>
           <div className="flex justify-center gap-12 pt-10 text-[10px] font-black uppercase tracking-widest opacity-40">
-            <span>Standard Privacy</span>
-            <span>Manual Approval</span>
-            <span>Cloud Indexed</span>
+            <span>Safe & Private</span>
+            <span>Fast Approval</span>
+            <span>Always Online</span>
           </div>
         </div>
       </section>
 
       <footer className="p-12 border-t border-foreground/5 text-center space-y-6">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">© 2024 THE VAULT ACADEMIC OS</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">© 2024 THE VAULT STUDY HUB</div>
         <div className="flex justify-center gap-8 text-[10px] font-black uppercase opacity-20">
            <span>Terms</span>
            <span>Privacy</span>
@@ -186,15 +186,15 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
           <div className="text-center py-12 space-y-6 animate-in zoom-in-95 duration-500">
             <div className="w-20 h-20 bg-accent text-background rounded-full flex items-center justify-center mx-auto text-3xl font-black">✓</div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-black italic tracking-tighter uppercase">Request_Sent</h3>
-              <p className="text-foreground/40 text-sm px-6">Your application is in the matrix. Admin will review your credentials for the next batch.</p>
+              <h3 className="text-2xl font-black italic tracking-tighter uppercase">Application_Sent</h3>
+              <p className="text-foreground/40 text-sm px-6">Your application has been received. Our team will review your details soon.</p>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-2">
-              <h3 className="text-3xl font-black italic tracking-tighter uppercase">Request_Access</h3>
-              <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">Apply for the academic matrix invitation</p>
+              <h3 className="text-3xl font-black italic tracking-tighter uppercase">Join Member List</h3>
+              <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">Apply to become a student member</p>
             </div>
 
             <div className="space-y-4">
@@ -243,7 +243,7 @@ const InviteModal = ({ onClose }: { onClose: () => void }) => {
                type="submit"
                className="w-full bg-foreground text-background font-black uppercase tracking-[0.2em] py-5 rounded-2xl hover:bg-foreground/90 active:scale-95 transition-all shadow-xl"
             >
-               Deploy Request
+               Submit Application
             </button>
           </form>
         )}

@@ -9,55 +9,38 @@ import { SummaryModal } from "./SummaryModal";
 
 export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
   const chapters = useQuery(api.chapters.getChapters, { subjectId });
-  const updateState = useMutation(api.chapters.updateChapterState);
-  const { isLocked, timeLeft, startTimer } = useTimer();
   const [activeSummaryChapter, setActiveSummaryChapter] = useState<Id<"chapters"> | null>(null);
 
   if (!chapters) return <div className="p-4">Loading Matrix Data...</div>;
 
   return (
     <div className="space-y-6">
-      <div className={cn(
-        "brutalist-card bg-background flex justify-between items-center transition-all",
-        isLocked ? "border-danger shadow-[4px_4px_0px_0px_rgba(255,49,49,1)]" : "border-accent shadow-[4px_4px_0px_0px_rgba(0,255,65,1)]"
-      )}>
-        <div>
-          <h3 className="text-xl font-bold">{isLocked ? "LOCKDOWN ACTIVE" : "ENGINE UNLOCKED"}</h3>
-          <p className="text-xs opacity-60 uppercase tracking-widest font-mono">
-            {isLocked ? `Complete ${timeLeft}s micro-commitment to unlock toggles` : "Manual override permitted"}
-          </p>
-        </div>
-        {isLocked && timeLeft === 300 && (
-          <button onClick={startTimer} className="brutalist-button bg-danger">IGNITE TIMER</button>
-        )}
-      </div>
-
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse brutalist-border bg-background">
+        <table className="w-full border-collapse bg-background rounded-2xl overflow-hidden border border-foreground/5">
           <thead>
-            <tr className="bg-glass text-left">
-              <th className="p-3 border-r-3 border-foreground">CH#</th>
-              <th className="p-3 border-r-3 border-foreground min-w-[200px]">CHAPTER TITLE</th>
-              <th className="p-3 border-r-3 border-foreground text-center">THEORY</th>
-              <th className="p-3 border-r-3 border-foreground text-center">IN-TEXT</th>
-              <th className="p-3 border-r-3 border-foreground text-center">EXERCISE</th>
-              <th className="p-3 border-r-3 border-foreground text-center">PYQ</th>
-              <th className="p-3 text-center">FRICTION</th>
+            <tr className="bg-foreground/5 text-left text-[10px] font-black uppercase tracking-widest opacity-40">
+              <th className="p-4">CH#</th>
+              <th className="p-4 min-w-[200px]">CHAPTER TITLE</th>
+              <th className="p-4 text-center">THEORY</th>
+              <th className="p-4 text-center">IN-TEXT</th>
+              <th className="p-4 text-center">EXERCISE</th>
+              <th className="p-4 text-center">PYQ</th>
+              <th className="p-4 text-center">FRICTION</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-foreground/5">
             {chapters.map((ch: any) => (
-              <tr key={ch._id} className="border-t-3 border-foreground hover:bg-glass transition-colors">
-                <td className="p-3 border-r-3 border-foreground font-bold">{ch.chapterNumber}</td>
-                <td className="p-3 border-r-3 border-foreground">
+              <tr key={ch._id} className="hover:bg-foreground/[0.02] transition-colors">
+                <td className="p-4 font-bold">{ch.chapterNumber}</td>
+                <td className="p-4">
                   <div className="flex flex-col">
                     <span className="font-bold">{ch.title}</span>
                     <span className={cn(
                       "text-[10px] uppercase font-black",
                       ch.verificationStatus === "verified" ? "text-accent" : 
-                      ch.verificationStatus === "pending" ? "text-yellow-400 animate-pulse" : "text-danger opacity-50"
+                      ch.verificationStatus === "pending" ? "text-yellow-400 animate-pulse" : "text-foreground/20 italic"
                     )}>
-                      STATUS: {ch.verificationStatus}
+                      {ch.verificationStatus}
                     </span>
                   </div>
                 </td>
@@ -65,25 +48,21 @@ export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
                   chapterId={ch._id} 
                   field="theoryCompleted" 
                   value={ch.theoryCompleted} 
-                  locked={isLocked}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="inTextQuestionsCompleted" 
                   value={ch.inTextQuestionsCompleted} 
-                  locked={isLocked}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="ncertExercisesCompleted" 
                   value={ch.ncertExercisesCompleted} 
-                  locked={isLocked}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="pyqCompleted" 
                   value={ch.pyqCompleted} 
-                  locked={isLocked}
                   onComplete={() => setActiveSummaryChapter(ch._id)}
                 />
                 <td className="p-2 text-center">
@@ -113,7 +92,7 @@ export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
   );
 }
 
-function BooleanCell({ chapterId, field, value, locked, onComplete }: any) {
+function BooleanCell({ chapterId, field, value, onComplete }: any) {
   const updateState = useMutation(api.chapters.updateChapterState);
   
   const handleToggle = async () => {
@@ -125,17 +104,15 @@ function BooleanCell({ chapterId, field, value, locked, onComplete }: any) {
   };
 
   return (
-    <td className="p-3 border-r-3 border-foreground text-center">
+    <td className="p-4 text-center">
       <button 
-        disabled={locked}
         onClick={handleToggle}
         className={cn(
-          "w-6 h-6 border-2 border-foreground transition-all",
-          value ? "bg-accent shadow-[2px_2px_0px_0px_rgba(250,250,250,1)]" : "bg-transparent",
-          locked && "opacity-20 grayscale cursor-not-allowed"
+          "w-5 h-5 rounded-md border-2 border-foreground/10 transition-all flex items-center justify-center",
+          value ? "bg-accent border-accent text-background" : "bg-foreground/5 hover:border-foreground/30"
         )}
       >
-        {value && <span className="text-background block text-[10px] font-black">✓</span>}
+        {value && <span className="text-[10px] font-black">✓</span>}
       </button>
     </td>
   );

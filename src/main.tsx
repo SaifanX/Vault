@@ -18,7 +18,7 @@ function SafeApp() {
           <h1 className="text-3xl font-black italic mb-4">BACKEND MISCONFIGURED</h1>
           <p className="opacity-60 text-xs uppercase tracking-[0.2em] mb-6">Error Code: NULL_CONVEX_URL</p>
           <div className="space-y-4 text-sm">
-            <p>Vault cannot synchronize without its data matrix. You must configure your Convex environment variables.</p>
+            <p>The Hub cannot load your study data. Please check your system configuration.</p>
             <div className="bg-glass p-4 border border-foreground/20">
               <p className="text-accent font-bold mb-2">REQUIRED ACTION:</p>
               <ol className="list-decimal list-inside space-y-2 opacity-80">
