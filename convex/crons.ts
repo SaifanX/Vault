@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.interval(
   "validate pending summaries",
   { minutes: 30 },
-  internal.validationEngine.processPendingSummaries
+  (internal.validationEngine as any).processPendingSummaries
 );
 
 export default crons;
