@@ -59,6 +59,7 @@ export const seedNCERTData = mutation({
         ];
       }
 
+      for (let i = 0; i < chapters.length; i++) {
         // 2024-25 NCERT Link Pattern
         let resourceUrl = "";
         const chNum = (i + 1).toString().padStart(2, "0");
@@ -78,7 +79,49 @@ export const seedNCERTData = mutation({
           verificationStatus: "unattempted",
           resourceUrl: resourceUrl || undefined,
         });
+      }
     }
     return "Vault Seeding Complete: Grade 9 Academic Matrix Initialized.";
+  },
+});
+import bcrypt from "bcryptjs";
+import { v } from "convex/values";
+
+export const setupFirstAdmin = mutation({
+  args: {
+    username: v.string(), // e.g. "saifan"
+    password: v.string(), // e.g. "Saifan1234"
+    name: v.string(),
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // 1. Check if admin already exists to prevent duplication
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "admin"))
+      .first();
+    
+    if (existing) throw new Error("Admin already initialized.");
+
+    // 2. Create the User Record
+    const userId = await ctx.db.insert("users", {
+        name: args.name,
+        email: args.email,
+        username: args.username,
+        role: "admin",
+        grade: "10",
+        isBanned: false,
+    });
+
+    // 3. Create the Password Account
+    const hashed = bcrypt.hashSync(args.password, 10);
+    await ctx.db.insert("accounts", {
+        userId: userId as any,
+        provider: "password",
+        providerAccountId: args.email,
+        secret: hashed,
+    });
+
+    return { success: true, message: "Dictator Admin Ready. Log in with your credentials." };
   },
 });

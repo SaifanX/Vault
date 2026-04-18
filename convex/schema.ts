@@ -1,7 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
-export default defineSchema({
+const schema = defineSchema({
+  ...authTables,
   subjects: defineTable({
     name: v.string(),
     totalChapters: v.number(),
@@ -28,6 +30,7 @@ export default defineSchema({
   .index("by_review_date", ["nextReviewDate"]),
 
   summaries: defineTable({
+    userId: v.optional(v.id("users")), // Track who submitted the summary
     chapterId: v.id("chapters"),
     content: v.string(),
     timestamp: v.number(),
@@ -36,25 +39,32 @@ export default defineSchema({
       v.literal("approved"),
       v.literal("rejected")
     ),
-  }),
+  }).index("by_ai_status", ["aiVerificationStatus"]),
 
   dailyMetrics: defineTable({
+    userId: v.optional(v.id("users")),
     date: v.string(), // YYYY-MM-DD
     focusMinutes: v.number(),
     chaptersProcessed: v.number(),
   }),
 
+  // We override the default users table to add our proprietary OS fields
   users: defineTable({
-    username: v.string(),
-    passwordHash: v.string(),
-    name: v.string(),
-    email: v.string(),
-    grade: v.string(), // "8", "9", or "10"
-    role: v.union(v.literal("admin"), v.literal("student")),
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    // OS Specific Fields
+    username: v.optional(v.string()),
+    grade: v.optional(v.string()), // "8", "9", or "10"
+    role: v.optional(v.union(v.literal("admin"), v.literal("student"))),
     isBanned: v.optional(v.boolean()),
     passwordChangeRequired: v.optional(v.boolean()),
     permissions: v.optional(v.array(v.string())),
-  }).index("by_username", ["username"]),
+    tokenIdentifier: v.optional(v.string()),
+  })
+  .index("by_username", ["username"])
+  .index("by_role", ["role"])
+  .index("by_tokenIdentifier", ["tokenIdentifier"]),
 
   accessRequests: defineTable({
     name: v.string(),
@@ -64,3 +74,5 @@ export default defineSchema({
     timestamp: v.number(),
   }).index("by_status", ["status"]),
 });
+
+export default schema;

@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexReactClient } from "convex/react";
 import { TimerProvider } from './context/TimerContext'
 import App from './App'
 import './index.css'
@@ -36,13 +37,13 @@ function SafeApp() {
 
   const convex = new ConvexReactClient(convexUrl);
   return (
-    <ConvexProvider client={convex}>
+    <ConvexAuthProvider client={convex}>
       <AuthProvider>
         <TimerProvider>
           <App />
         </TimerProvider>
       </AuthProvider>
-    </ConvexProvider>
+    </ConvexAuthProvider>
   );
 }
 

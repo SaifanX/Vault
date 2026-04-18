@@ -24,9 +24,9 @@ export function ContentHub() {
     if (subjects && subjects.length > 0 && !selectedSubjectId) {
       setSelectedSubjectId(subjects[0]._id);
     }
-  }, [subjects, selectedSubjectId]);
+  }, [subjects]);
 
-  if (!chapters) return <div className="p-4">Loading Study Data...</div>;
+  if (!subjects) return <div className="p-4">Loading Library...</div>;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -85,15 +85,26 @@ export function ContentHub() {
         <div className="bento-card relative min-h-[500px] flex flex-col p-0 overflow-hidden bg-black/20 border-foreground/5">
           {activeUrl ? (
             <div className="flex flex-col h-full">
-              <div className="h-10 px-4 bg-background border-b border-foreground/5 flex items-center justify-between">
-                <div className="text-[8px] font-black uppercase tracking-widest opacity-40">Document_Viewer_Active</div>
-                <button onClick={() => setActiveUrl(null)} className="opacity-40 hover:opacity-100 transition-opacity">
-                  <X size={14} />
-                </button>
+              <div className="flex justify-between items-center p-4 bg-background border-b border-foreground/10">
+                 <div className="text-[10px] font-black uppercase tracking-widest opacity-40">NCERT_Viewer_Engine</div>
+                 <div className="flex gap-2">
+                    <a 
+                      href={activeUrl} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-[10px] font-black uppercase tracking-widest bg-foreground/5 px-3 py-1 rounded hover:bg-foreground/10 transition-all flex items-center gap-2"
+                    >
+                      <ExternalLink size={10} />
+                      Backup Viewer
+                    </a>
+                    <button onClick={() => setActiveUrl(null)} className="opacity-40 hover:opacity-100 transition-opacity">
+                      <X size={14} />
+                    </button>
+                 </div>
               </div>
               <iframe 
                 src={activeUrl}
-                className="flex-1 w-full h-full invert dark:filter-none"
+                className="flex-1 w-full h-full grayscale invert-[0.9] dark:invert-0 brightness-90 contrast-110"
                 title="Syllabus Viewer"
               />
             </div>

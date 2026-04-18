@@ -9,6 +9,7 @@ import { SummaryModal } from "./SummaryModal";
 
 export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
   const chapters = useQuery(api.chapters.getChapters, { subjectId });
+  const updateState = useMutation(api.chapters.updateChapterState);
   const [activeSummaryChapter, setActiveSummaryChapter] = useState<Id<"chapters"> | null>(null);
 
   if (!chapters) return <div className="p-4">Loading Matrix Data...</div>;
@@ -47,22 +48,26 @@ export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="theoryCompleted" 
-                  value={ch.theoryCompleted} 
+                  value={ch.theoryCompleted}
+                  updateState={updateState}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="inTextQuestionsCompleted" 
-                  value={ch.inTextQuestionsCompleted} 
+                  value={ch.inTextQuestionsCompleted}
+                  updateState={updateState}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="ncertExercisesCompleted" 
-                  value={ch.ncertExercisesCompleted} 
+                  value={ch.ncertExercisesCompleted}
+                  updateState={updateState}
                 />
                 <BooleanCell 
                   chapterId={ch._id} 
                   field="pyqCompleted" 
                   value={ch.pyqCompleted} 
+                  updateState={updateState}
                   onComplete={() => setActiveSummaryChapter(ch._id)}
                 />
                 <td className="p-2 text-center">
@@ -92,8 +97,7 @@ export function ChapterMatrix({ subjectId }: { subjectId: Id<"subjects"> }) {
   );
 }
 
-function BooleanCell({ chapterId, field, value, onComplete }: any) {
-  const updateState = useMutation(api.chapters.updateChapterState);
+function BooleanCell({ chapterId, field, value, updateState, onComplete }: any) {
   
   const handleToggle = async () => {
     const newValue = !value;

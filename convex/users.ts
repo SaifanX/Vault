@@ -1,133 +1,169 @@
-import { mutation, query, action } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import bcrypt from "bcryptjs";
 
-export const fixUserMetadata = mutation({
+/**
+ * Returns the current authenticated user's profile.
+ */
+export const me = query({
   args: {},
   handler: async (ctx) => {
-    const users = await ctx.db.query("users").collect();
-    for (const user of users) {
-      if (!user.email || !user.grade) {
-        await ctx.db.patch(user._id, {
-          email: `${user.username}@vault.os`,
-          grade: user.role === "admin" ? "10" : "9",
-        });
-      }
-    }
-    return "Metadata fixed";
-  },
-});
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
 
-export const seedUsers = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const existing = await ctx.db.query("users").collect();
-    if (existing.length > 0) return "Users already seeded";
-
-    const users = [
-      {
-        username: "admin",
-        passwordHash: bcrypt.hashSync("admin_vault", 10),
-        name: "Admin",
-        email: "admin@vault.os",
-        grade: "10",
-        role: "admin" as const,
-        permissions: ["all"],
-      },
-      {
-        username: "saifan",
-        passwordHash: bcrypt.hashSync("saifan_vault", 10),
-        name: "Saifan",
-        email: "saifan@vault.os",
-        grade: "9",
-        role: "student" as const,
-        permissions: ["standard"],
-      },
-      {
-        username: "faiz",
-        passwordHash: bcrypt.hashSync("faiz_vault", 10),
-        name: "Faiz",
-        email: "faiz@vault.os",
-        grade: "8",
-        role: "student" as const,
-        permissions: ["standard"],
-      },
-    ];
-
-    for (const user of users) {
-      await ctx.db.insert("users", user);
-    }
-
-    return "Users seeded successfully";
-  },
-});
-
-export const login = mutation({
-  args: {
-    username: v.string(),
-    password: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const user = await ctx.db
+    return await ctx.db
       .query("users")
-      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
       .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const isValid = bcrypt.compareSync(args.password, user.passwordHash);
-    if (!isValid) {
-      throw new Error("Invalid password");
-    }
-
-    return {
-      userId: user._id,
-      name: user.name,
-      role: user.role,
-      isBanned: user.isBanned ?? false,
-      passwordChangeRequired: user.passwordChangeRequired ?? false,
-    };
   },
 });
 
-export const updatePassword = mutation({
-  args: {
-    userId: v.id("users"),
-    newPassword: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const passwordHash = bcrypt.hashSync(args.newPassword, 10);
-    await ctx.db.patch(args.userId, {
-      passwordHash,
-      passwordChangeRequired: false,
-    });
-    return "Password updated";
-  },
-});
-
+/**
+ * List all users (Admin only).
+ */
 export const listUsers = query({
   args: {},
   handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const caller = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!caller || caller.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
     return await ctx.db.query("users").collect();
   },
 });
 
+/**
+ * Ban or unban a user (Admin only).
+ */
 export const toggleBan = mutation({
   args: {
     userId: v.id("users"),
     isBanned: v.boolean(),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const caller = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!caller || caller.role !== "admin") {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
     await ctx.db.patch(args.userId, { isBanned: args.isBanned });
     return "User status updated";
   },
 });
 
-export const me = query({
-  args: { userId: v.id("users") },
+/**
+ * Updates the password for the current user.
+ * This is a secure bridge to the Convex Auth 'accounts' table.
+ */
+export const updatePassword = mutation({
+  args: {
+    newPassword: v.string(),
+  },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.userId);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) throw new Error("User profile not found");
+
+    // Find the associated password account
+    const account = await ctx.db
+      .query("accounts")
+      .withIndex("by_userId_provider", (q) => 
+        q.eq("userId", user._id as any).eq("provider", "password")
+      )
+      .unique();
+
+    if (!account) throw new Error("Authentication account not found");
+
+    // Hash and update using bcrypt (standard for Convex Auth Password provider)
+    const hashed = bcrypt.hashSync(args.newPassword, 10);
+    await ctx.db.patch(account._id, { secret: hashed });
+    
+    // Clear the 'force change' flag if it was set
+    await ctx.db.patch(user._id, { passwordChangeRequired: false });
+
+    return "Security credentials updated";
+  },
+});
+
+/**
+ * Creates or updates a user profile after a successful login.
+ */
+export const syncUser = mutation({
+  args: {
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+    username: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (existingUser) {
+      await ctx.db.patch(existingUser._id, {
+        name: args.name ?? existingUser.name,
+        email: args.email ?? existingUser.email,
+        username: args.username ?? existingUser.username,
+      });
+      return existingUser._id;
+    } else {
+      // Logic for linking pre-created users
+      const preCreatedUser = await ctx.db
+        .query("users")
+        .filter((q) => 
+          q.and(
+            q.or(
+              q.eq(q.field("email"), identity.email),
+              q.eq(q.field("username"), identity.nickname)
+            ),
+            q.eq(q.field("tokenIdentifier"), undefined)
+          )
+        )
+        .unique();
+
+      if (preCreatedUser) {
+        await ctx.db.patch(preCreatedUser._id, {
+          tokenIdentifier: identity.tokenIdentifier,
+          name: identity.name ?? preCreatedUser.name,
+        });
+        return preCreatedUser._id;
+      }
+
+      // Default fallback
+      return await ctx.db.insert("users", {
+        tokenIdentifier: identity.tokenIdentifier,
+        name: identity.name ?? args.name ?? "New User",
+        email: identity.email ?? args.email,
+        username: args.username,
+        role: "student",
+        grade: "9",
+        isBanned: false,
+      });
+    }
   },
 });

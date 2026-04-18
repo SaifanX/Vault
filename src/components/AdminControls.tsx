@@ -13,30 +13,51 @@ import {
   UserCheck
 } from "lucide-react";
 
+import { useAuth } from "../context/AuthContext";
+
 export const AdminControls: React.FC = () => {
+  const { user } = useAuth();
   const requests = useQuery(api.requests.getRequests, { status: "pending" });
   const users = useQuery(api.users.listUsers);
   const approve = useMutation(api.requests.approveRequest);
   const toggleBan = useMutation(api.users.toggleBan);
   
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<{username: string, password: string} | null>(null);
 
   const handleApprove = async (id: Id<"accessRequests">) => {
-    const tempPass = "VAULT_" + Math.floor(Math.random() * 9999);
-    const result = await approve({ requestId: id, tempPassword: tempPass });
-    setSuccessMsg(`Approved! User: ${result.username} | Temp Pass: ${tempPass}`);
-    setTimeout(() => setSuccessMsg(null), 10000);
+    if (!user) return;
+    try {
+      const result = await approve({ requestId: id });
+      setSuccessMsg({ username: result.username, password: result.password });
+      // Keep message longer so admin can copy the credentials
+      setTimeout(() => setSuccessMsg(null), 30000);
+    } catch (err) {
+      console.error("Approval failed:", err);
+    }
   };
 
   const handleToggleBan = async (userId: Id<"users">, currentStatus: boolean) => {
+    if (!user) return;
     await toggleBan({ userId, isBanned: !currentStatus });
   };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       {successMsg && (
-        <div className="bg-accent text-background p-4 rounded-xl font-black uppercase tracking-widest text-center shadow-lg border-2 border-background animate-bounce">
-          {successMsg}
+        <div className="bg-accent text-background p-6 rounded-sm font-black uppercase tracking-widest shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] border-4 border-foreground animate-in zoom-in-95 duration-300">
+          <p className="text-[10px] opacity-60 mb-2">ACCESS_GRANTED: NEW_USER_ENROLLED</p>
+          <div className="flex flex-col md:flex-row gap-6 items-center justify-center bg-background/10 p-4 rounded-sm border border-background/20 mt-2">
+            <div className="text-center">
+              <span className="block text-[8px] opacity-40 mb-1">USERNAME</span>
+              <code className="text-xl px-2 bg-background/20">{successMsg.username}</code>
+            </div>
+            <div className="w-px h-8 bg-background/20 hidden md:block" />
+            <div className="text-center">
+              <span className="block text-[8px] opacity-40 mb-1">PASSWORD</span>
+              <code className="text-xl px-2 bg-background/20">{successMsg.password}</code>
+            </div>
+          </div>
+          <p className="mt-4 text-[8px] opacity-40 italic">Note: These credentials will be hidden in 30 seconds.</p>
         </div>
       )}
 

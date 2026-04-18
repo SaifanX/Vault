@@ -12,7 +12,7 @@ import { PasswordChangeModal } from "./components/PasswordChangeModal";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, BookOpen } from "lucide-react";
 import { cn } from "./lib/utils";
 
 const BannedOverlay: React.FC = () => (

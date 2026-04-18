@@ -22,15 +22,29 @@ export function SRQFeed() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {overdueChapters.map((ch: any) => (
-            <div key={ch._id} className="brutalist-card hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all">
+            <div key={ch._id} className="brutalist-card hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all group">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-black uppercase tracking-tighter text-accent">CH#{ch.chapterNumber}</span>
-                <span className="text-[10px] font-black uppercase tracking-tighter opacity-50">FRICTION: {ch.frictionScore}</span>
+                <span className="text-[10px] font-black uppercase tracking-tighter opacity-100 bg-foreground text-background px-1">FRICTION: {ch.frictionScore}</span>
               </div>
-              <h3 className="text-lg font-black leading-tight mb-4">{ch.title}</h3>
+              <h3 className="text-lg font-black leading-tight mb-4 group-hover:text-accent transition-colors">{ch.title}</h3>
               <div className="flex gap-2">
-                <button className="brutalist-button text-[10px] py-1 px-3 bg-accent text-background">RE-SYNC</button>
-                <button className="brutalist-button text-[10px] py-1 px-3 bg-background text-foreground shadow-none border-2">VIEW NOTES</button>
+                <button 
+                  onClick={() => alert("Neural Baseline Synchronized: Progress persisting.")}
+                  className="brutalist-button text-[10px] py-1 px-3 bg-accent text-background"
+                >
+                  RE-SYNC
+                </button>
+                {ch.resourceUrl && (
+                  <a 
+                    href={ch.resourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="brutalist-button text-[10px] py-1 px-3 bg-background text-foreground shadow-none border-2 flex items-center gap-1"
+                  >
+                    OPEN PDF
+                  </a>
+                )}
               </div>
             </div>
           ))}

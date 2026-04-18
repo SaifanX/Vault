@@ -72,6 +72,34 @@
   .auth-input {
     @apply bg-foreground/5 border border-foreground/10 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-foreground/20 transition-all;
   }
+
+  /* Brutalist Utilities */
+  .brutalist-card {
+    @apply bg-background border-2 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all;
+  }
+
+  .brutalist-button {
+    @apply border-2 border-foreground px-4 py-2 font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] active:translate-x-[2px] active:translate-y-[2px] transition-all;
+  }
+
+  .brutalist-border {
+    @apply border-2 border-foreground;
+  }
+
+  .brutalist-input {
+    @apply border-2 border-foreground bg-background px-4 py-2 font-bold focus:outline-none focus:bg-foreground/5 transition-all;
+  }
+
+  /* Status Colors */
+  .bg-danger {
+    @apply bg-red-500 text-white;
+  }
+  .text-danger {
+    @apply text-red-500;
+  }
+  .bg-glass {
+    @apply bg-foreground/[0.03] backdrop-blur-md;
+  }
 }
 
 /* Custom Scrollbar */
